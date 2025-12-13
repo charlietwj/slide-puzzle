@@ -8,22 +8,26 @@ TILE_SIZE = 80
 HEIGHT = 4
 WIDTH = 4
 FPS = 60
-X_START = 150
+X_START = 200
 Y_START = 100
+FONT_SIZE = TILE_SIZE // 3
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 BLUE = (153, 204, 255)
 DARKGRAY = (32, 32, 32)
+LIGHTGRAY = (192, 192, 192)
 
 TILE_COLOR = BLUE
-BORDER_COLOR = DARKGRAY
+BORDER_COLOR = LIGHTGRAY
 BACKGROUND_COLOR = WHITE
+FONT_COLOR = DARKGRAY
 
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Slide Puzzle")
 clock = pygame.time.Clock()
+font = pygame.font.SysFont("Arial", int(FONT_SIZE))
 board = []
 
 def setup_game():
@@ -94,9 +98,20 @@ def draw():
     # Draw tiles
     for i in range(HEIGHT):
         for j in range(WIDTH):
+            if board[i][j] == 0:
+                continue
+            
             x = X_START + j * TILE_SIZE + j
             y = Y_START + i * TILE_SIZE + i
             pygame.draw.rect(screen, TILE_COLOR, (x, y, TILE_SIZE, TILE_SIZE))
+
+            number = board[i][j]
+            text_surface = font.render(str(number), True, FONT_COLOR)
+            text_rect = text_surface.get_rect()
+            x += TILE_SIZE // 2
+            y += TILE_SIZE // 2
+            text_rect.center = x, y
+            screen.blit(text_surface, text_rect)
     
     pygame.display.flip()
 
