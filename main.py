@@ -7,6 +7,7 @@ SCREEN_HEIGHT = 500
 TILE_SIZE = 80
 HEIGHT = 4
 WIDTH = 4
+FPS = 60
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -45,15 +46,29 @@ class Move(Enum):
     DOWN = auto()
 
 def make_move(move: Move) -> None:
+    pos = None
+    for i in range(HEIGHT):
+        for j in range(WIDTH):
+            if board[i][j] == 0:
+                pos = i, j
+    
+    i, j = pos
     if move == Move.LEFT:
-        print(f"Move left")
+        if j < WIDTH - 1:
+            board[i][j] = board[i][j+1]
+            board[i][j+1] = 0
     if move == Move.RIGHT:
-        print(f"Move right")
+        if j > 0:
+            board[i][j] = board[i][j-1]
+            board[i][j-1] = 0
     if move == Move.UP:
-        print(f"Move up")
+        if i < HEIGHT - 1:
+            board[i][j] = board[i+1][j]
+            board[i+1][j] = 0
     if move == Move.DOWN:
-        print(f"Move down")
-
+        if i > 0:
+            board[i][j] = board[i-1][j]
+            board[i-1][j] = 0
 
 def handle_events():
     global running
@@ -79,7 +94,7 @@ def draw():
 while running:
     handle_events()
     draw()
-    clock.tick(60)
+    clock.tick(FPS)
 
 pygame.quit()
 
