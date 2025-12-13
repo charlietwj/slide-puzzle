@@ -11,15 +11,17 @@ FPS = 60
 X_START = 200
 Y_START = 100
 FONT_SIZE = TILE_SIZE // 3
+BORDER_WIDTH = 4
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 BLUE = (153, 204, 255)
 DARKGRAY = (32, 32, 32)
 LIGHTGRAY = (192, 192, 192)
+DARKBLUE = (0, 76, 153)
 
 TILE_COLOR = BLUE
-BORDER_COLOR = LIGHTGRAY
+BORDER_COLOR = DARKBLUE
 BACKGROUND_COLOR = WHITE
 FONT_COLOR = DARKGRAY
 
@@ -100,7 +102,7 @@ def draw():
         for j in range(WIDTH):
             if board[i][j] == 0:
                 continue
-            
+
             x = X_START + j * TILE_SIZE + j
             y = Y_START + i * TILE_SIZE + i
             pygame.draw.rect(screen, TILE_COLOR, (x, y, TILE_SIZE, TILE_SIZE))
@@ -112,6 +114,13 @@ def draw():
             y += TILE_SIZE // 2
             text_rect.center = x, y
             screen.blit(text_surface, text_rect)
+
+    # Draw border
+    x = X_START - BORDER_WIDTH
+    y = Y_START - BORDER_WIDTH
+    width = TILE_SIZE * WIDTH + (WIDTH - 1) + BORDER_WIDTH * 2
+    height = TILE_SIZE * HEIGHT + (HEIGHT - 1) + BORDER_WIDTH * 2
+    pygame.draw.rect(screen, BORDER_COLOR, (x, y, width, height), BORDER_WIDTH)
     
     pygame.display.flip()
 
