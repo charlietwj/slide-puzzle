@@ -1,5 +1,6 @@
 import pygame
 import random
+from enum import Enum, auto
 
 SCREEN_WIDTH = 700
 SCREEN_HEIGHT = 500
@@ -37,12 +38,38 @@ def setup_game():
 setup_game()
 running = True
 
+class Move(Enum):
+    LEFT = auto()
+    RIGHT = auto()
+    UP = auto()
+    DOWN = auto()
+
+def make_move(move: Move) -> None:
+    if move == Move.LEFT:
+        print(f"Move left")
+    if move == Move.RIGHT:
+        print(f"Move right")
+    if move == Move.UP:
+        print(f"Move up")
+    if move == Move.DOWN:
+        print(f"Move down")
+
+
 def handle_events():
     global running
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                make_move(Move.LEFT)
+            elif event.key == pygame.K_RIGHT:
+                make_move(Move.RIGHT)
+            elif event.key == pygame.K_UP:
+                make_move(Move.UP)
+            elif event.key == pygame.K_DOWN:
+                make_move(Move.DOWN)
 
 def draw():
     screen.fill(BACKGROUND_COLOR)
@@ -52,6 +79,7 @@ def draw():
 while running:
     handle_events()
     draw()
+    clock.tick(60)
 
 pygame.quit()
 
