@@ -1,34 +1,57 @@
 import pygame
+import random
 
-class Game:
+SCREEN_WIDTH = 700
+SCREEN_HEIGHT = 500
+TILE_SIZE = 80
+HEIGHT = 4
+WIDTH = 4
 
-    def __init__(self) -> None:
-        pygame.init()
-        self.screen = pygame.display.set_mode((500, 500))
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+BLUE = (153, 204, 255)
+DARKGRAY = (32, 32, 32)
 
-    def handle_events(self) -> None:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.running = False
+TILE_COLOR = BLUE
+BORDER_COLOR = DARKGRAY
+BACKGROUND_COLOR = WHITE
 
-    def update(self) -> None:
-        pass
+pygame.init()
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Slide Puzzle")
+clock = pygame.time.Clock()
+board = []
 
-    def draw(self) -> None:
-        self.screen.fill((0, 0, 0))
-        
-        pygame.display.flip()
+def setup_game():
+    numbers = [i for i in range(WIDTH * HEIGHT)]
+    random.shuffle(numbers)
 
-    def run(self) -> None:
-        self.running = True
+    while board:
+        board.pop()
+
+    for i in range(HEIGHT):
+        start = i * HEIGHT
+        end = i * HEIGHT + WIDTH
+        board.append(numbers[start:end])
+
+setup_game()
+running = True
+
+def handle_events():
+    global running
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+def draw():
+    screen.fill(BACKGROUND_COLOR)
     
-        while self.running:
-            self.handle_events()
-            self.update()
-            self.draw()
+    pygame.display.flip()
 
-        pygame.quit()
+while running:
+    handle_events()
+    draw()
 
-if __name__ == "__main__":
-    game = Game()
-    game.run()
+pygame.quit()
+
