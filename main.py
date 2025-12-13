@@ -8,6 +8,8 @@ TILE_SIZE = 80
 HEIGHT = 4
 WIDTH = 4
 FPS = 60
+X_START = 150
+Y_START = 100
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -32,8 +34,8 @@ def setup_game():
         board.pop()
 
     for i in range(HEIGHT):
-        start = i * HEIGHT
-        end = i * HEIGHT + WIDTH
+        start = i * WIDTH
+        end = (i+1) * WIDTH
         board.append(numbers[start:end])
 
 setup_game()
@@ -88,6 +90,13 @@ def handle_events():
 
 def draw():
     screen.fill(BACKGROUND_COLOR)
+
+    # Draw tiles
+    for i in range(HEIGHT):
+        for j in range(WIDTH):
+            x = X_START + j * TILE_SIZE + j
+            y = Y_START + i * TILE_SIZE + i
+            pygame.draw.rect(screen, TILE_COLOR, (x, y, TILE_SIZE, TILE_SIZE))
     
     pygame.display.flip()
 
