@@ -7,11 +7,12 @@ SCREEN_HEIGHT = 500
 TILE_SIZE = 80
 HEIGHT = 4
 WIDTH = 4
-FPS = 60
+FPS = 240
 X_START = 200
 Y_START = 100
 FONT_SIZE = TILE_SIZE // 3
 BORDER_WIDTH = 4
+ANIMATION_SPEED = 1
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -47,6 +48,35 @@ def setup_game():
 setup_game()
 running = True
 
+def draw_tile(i, j, offset: tuple = (0, 0)):
+    x = X_START + j * TILE_SIZE + j + offset[0]
+    y = Y_START + i * TILE_SIZE + i + offset[1]
+    pygame.draw.rect(screen, TILE_COLOR, (x, y, TILE_SIZE, TILE_SIZE))
+
+    number = board[i][j]
+    text_surface = font.render(str(number), True, FONT_COLOR)
+    text_rect = text_surface.get_rect()
+    x += TILE_SIZE // 2
+    y += TILE_SIZE // 2
+    text_rect.center = x, y
+    screen.blit(text_surface, text_rect)
+
+def animate(start: tuple, dx: int, dy: int):
+    i, j = start
+    surface = screen.copy()
+    x = X_START + j * TILE_SIZE + j
+    y = Y_START + i * TILE_SIZE + i
+    pygame.draw.rect(surface, BACKGROUND_COLOR, (x, y, TILE_SIZE, TILE_SIZE))
+
+    for k in range(0, TILE_SIZE + 1, ANIMATION_SPEED):
+        screen.blit(surface, (0, 0))
+        distance = k
+        offset_x = dx * distance
+        offset_y = dy * distance
+        draw_tile(i, j, (offset_x, offset_y))
+        pygame.display.flip()
+        clock.tick(FPS)
+
 class Move(Enum):
     LEFT = auto()
     RIGHT = auto()
@@ -61,22 +91,34 @@ def make_move(move: Move) -> None:
                 pos = i, j
     
     i, j = pos
+    dx, dy = None, None
+    start = None
+    
     if move == Move.LEFT:
         if j < WIDTH - 1:
-            board[i][j] = board[i][j+1]
-            board[i][j+1] = 0
+            start = (i, j+1)
+            dx = -1
+            dy = 0
     if move == Move.RIGHT:
         if j > 0:
-            board[i][j] = board[i][j-1]
-            board[i][j-1] = 0
+            start = (i, j-1)
+            dx = 1
+            dy = 0
     if move == Move.UP:
         if i < HEIGHT - 1:
-            board[i][j] = board[i+1][j]
-            board[i+1][j] = 0
+            start = (i+1, j)
+            dx = 0
+            dy = -1
     if move == Move.DOWN:
         if i > 0:
-            board[i][j] = board[i-1][j]
-            board[i-1][j] = 0
+            start = (i-1, j)
+            dx = 0
+            dy = 1
+
+    if start:
+        animate(start, dx, dy)
+        board[i][j] = board[start[0]][start[1]]
+        board[start[0]][start[1]] = 0
 
 def handle_events():
     global running
@@ -102,18 +144,8 @@ def draw():
         for j in range(WIDTH):
             if board[i][j] == 0:
                 continue
-
-            x = X_START + j * TILE_SIZE + j
-            y = Y_START + i * TILE_SIZE + i
-            pygame.draw.rect(screen, TILE_COLOR, (x, y, TILE_SIZE, TILE_SIZE))
-
-            number = board[i][j]
-            text_surface = font.render(str(number), True, FONT_COLOR)
-            text_rect = text_surface.get_rect()
-            x += TILE_SIZE // 2
-            y += TILE_SIZE // 2
-            text_rect.center = x, y
-            screen.blit(text_surface, text_rect)
+            
+            draw_tile(i, j)
 
     # Draw border
     x = X_START - BORDER_WIDTH
@@ -127,7 +159,6 @@ def draw():
 while running:
     handle_events()
     draw()
-    clock.tick(FPS)
 
 pygame.quit()
 
