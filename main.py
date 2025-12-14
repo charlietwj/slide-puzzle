@@ -31,22 +31,13 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Slide Puzzle")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont("Arial", int(FONT_SIZE))
-board = []
+board = [[0] * WIDTH for _ in range(HEIGHT)]
 
-def setup_game():
-    numbers = [i for i in range(WIDTH * HEIGHT)]
-    random.shuffle(numbers)
-
-    while board:
-        board.pop()
-
-    for i in range(HEIGHT):
-        start = i * WIDTH
-        end = (i+1) * WIDTH
-        board.append(numbers[start:end])
-
-setup_game()
-running = True
+class Move(Enum):
+    LEFT = auto()
+    RIGHT = auto()
+    UP = auto()
+    DOWN = auto()
 
 def draw_tile(i, j, offset: tuple = (0, 0)):
     x = X_START + j * TILE_SIZE + j + offset[0]
@@ -77,13 +68,7 @@ def animate(start: tuple, dx: int, dy: int):
         pygame.display.flip()
         clock.tick(FPS)
 
-class Move(Enum):
-    LEFT = auto()
-    RIGHT = auto()
-    UP = auto()
-    DOWN = auto()
-
-def make_move(move: Move) -> None:
+def make_move(move: Move, slide_animation: bool = True) -> None:
     pos = None
     for i in range(HEIGHT):
         for j in range(WIDTH):
@@ -116,7 +101,8 @@ def make_move(move: Move) -> None:
             dy = 1
 
     if start:
-        animate(start, dx, dy)
+        if slide_animation:
+            animate(start, dx, dy)
         board[i][j] = board[start[0]][start[1]]
         board[start[0]][start[1]] = 0
 
@@ -155,6 +141,22 @@ def draw():
     pygame.draw.rect(screen, BORDER_COLOR, (x, y, width, height), BORDER_WIDTH)
     
     pygame.display.flip()
+
+
+def setup_game():
+    for i in range(HEIGHT):
+        for j in range(WIDTH):
+            board[i][j] = i * WIDTH + j + 1
+    board[HEIGHT-1][WIDTH-1] = 0
+
+    shuffle_moves = 10000
+    moves = [Move.LEFT, Move.RIGHT, Move.UP, Move.DOWN]
+    for _ in range(shuffle_moves):
+        i = random.randint(0, 3)
+        make_move(moves[i], slide_animation=False)
+
+setup_game()
+running = True
 
 while running:
     handle_events()
