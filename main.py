@@ -8,11 +8,12 @@ TILE_SIZE = 80
 HEIGHT = 4
 WIDTH = 4
 FPS = 240
-X_START = 200
+X_START = 250
 Y_START = 100
 FONT_SIZE = TILE_SIZE // 3
 BORDER_WIDTH = 4
 ANIMATION_SPEED = 1
+TEXT_POSITION = 50, Y_START + 20
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -31,7 +32,10 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Slide Puzzle")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont("Arial", int(FONT_SIZE))
+line_height = font.get_linesize()
 board = [[0] * WIDTH for _ in range(HEIGHT)]
+running = True
+game_over = False
 
 class Move(Enum):
     LEFT = auto()
@@ -106,21 +110,38 @@ def make_move(move: Move, slide_animation: bool = True) -> None:
         board[i][j] = board[start[0]][start[1]]
         board[start[0]][start[1]] = 0
 
+def setup_game():
+    for i in range(HEIGHT):
+        for j in range(WIDTH):
+            board[i][j] = i * WIDTH + j + 1
+    board[HEIGHT-1][WIDTH-1] = 0
+
+    shuffle_moves = 10000
+    moves = [Move.LEFT, Move.RIGHT, Move.UP, Move.DOWN]
+    for _ in range(shuffle_moves):
+        i = random.randint(0, 3)
+        make_move(moves[i], slide_animation=False)
+
 def handle_events():
-    global running
+    global running, game_over
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
-                make_move(Move.LEFT)
-            elif event.key == pygame.K_RIGHT:
-                make_move(Move.RIGHT)
-            elif event.key == pygame.K_UP:
-                make_move(Move.UP)
-            elif event.key == pygame.K_DOWN:
-                make_move(Move.DOWN)
+            if not game_over:
+                if event.key == pygame.K_LEFT:
+                    make_move(Move.LEFT)
+                elif event.key == pygame.K_RIGHT:
+                    make_move(Move.RIGHT)
+                elif event.key == pygame.K_UP:
+                    make_move(Move.UP)
+                elif event.key == pygame.K_DOWN:
+                    make_move(Move.DOWN)
+            else:
+                if event.key == pygame.K_r:
+                    game_over = False
+                    setup_game()
 
 def draw():
     screen.fill(BACKGROUND_COLOR)
@@ -139,28 +160,39 @@ def draw():
     width = TILE_SIZE * WIDTH + (WIDTH - 1) + BORDER_WIDTH * 2
     height = TILE_SIZE * HEIGHT + (HEIGHT - 1) + BORDER_WIDTH * 2
     pygame.draw.rect(screen, BORDER_COLOR, (x, y, width, height), BORDER_WIDTH)
+
+    # Draw text for game over
+    if game_over:
+        text_surface = font.render("You won!", True, FONT_COLOR)
+        screen.blit(text_surface, TEXT_POSITION)
+        text_surface = font.render('Press "r"', True, FONT_COLOR)
+        screen.blit(text_surface, (TEXT_POSITION[0], TEXT_POSITION[1] + line_height*2))
+        text_surface = font.render('to play again', True, FONT_COLOR)
+        screen.blit(text_surface, (TEXT_POSITION[0], TEXT_POSITION[1] + line_height*3))
     
     pygame.display.flip()
 
+def check_win():
+    global game_over
 
-def setup_game():
+    if game_over:
+        return
+    
+    game_over = True
     for i in range(HEIGHT):
         for j in range(WIDTH):
-            board[i][j] = i * WIDTH + j + 1
-    board[HEIGHT-1][WIDTH-1] = 0
+            if i == HEIGHT-1 and j == WIDTH-1:
+                continue
 
-    shuffle_moves = 10000
-    moves = [Move.LEFT, Move.RIGHT, Move.UP, Move.DOWN]
-    for _ in range(shuffle_moves):
-        i = random.randint(0, 3)
-        make_move(moves[i], slide_animation=False)
+            if board[i][j] != i * WIDTH + j + 1:
+                game_over = False
 
 setup_game()
-running = True
 
 while running:
     handle_events()
     draw()
+    check_win()
 
 pygame.quit()
 
